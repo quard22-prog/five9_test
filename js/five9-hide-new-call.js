@@ -1,7 +1,41 @@
+/**
+ * Five9 ADT Custom-Host bundle
+ *
+ * Loaded INSIDE the Five9 ADT iframe via Five9 admin → Custom Host config.
+ * Combines:
+ *   1. Navigation listener — receives postMessage from the parent taskbar
+ *      and updates window.location.hash to switch ADT views.
+ *   2. "New Call" button suppressor — hides the legacy New Call button
+ *      wherever it appears (including shadow DOM).
+ */
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * 1. Navigation listener
+ * ─────────────────────────────────────────────────────────────────────────── */
 (function () {
   'use strict';
 
-  console.log('[five9-hide-new-call] script loaded');
+  console.log('[five9-custom/navigate] listener loaded');
+
+  window.addEventListener('message', function (event) {
+    var data = event.data;
+    if (!data || data.type !== 'five9-navigate' || !data.route) return;
+
+    var newHash = '#agent/' + data.route;
+    if (window.location.hash !== newHash) {
+      window.location.hash = newHash;
+      console.log('[five9-custom/navigate] hash updated →', newHash);
+    }
+  });
+})();
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * 2. Hide "New Call" button
+ * ─────────────────────────────────────────────────────────────────────────── */
+(function () {
+  'use strict';
+
+  console.log('[five9-custom/hide-new-call] script loaded');
 
   var SELECTORS = [
     '#sfli-home-new-call',
@@ -67,7 +101,7 @@
       });
 
       if (total !== last) {
-        console.log('[five9-hide-new-call] hidden matches:', total);
+        console.log('[five9-custom/hide-new-call] hidden matches:', total);
         last = total;
       }
     }
@@ -97,12 +131,12 @@
 
     apply();
     setInterval(apply, 500);
-    console.log('[five9-hide-new-call] suppressor installed');
+    console.log('[five9-custom/hide-new-call] suppressor installed');
   }
 
   try {
     install();
   } catch (err) {
-    console.error('[five9-hide-new-call] install failed', err);
+    console.error('[five9-custom/hide-new-call] install failed', err);
   }
 })();
